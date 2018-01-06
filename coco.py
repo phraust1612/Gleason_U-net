@@ -1,4 +1,3 @@
-import sys
 import numpy as np
 import scipy.misc
 import tensorflow as tf
@@ -33,7 +32,12 @@ for i in range (len (imgIds)):
   img = coco.loadImgs(imgIds[i])[0]
   I = io.imread(img['coco_url'])
   I = scipy.misc.imresize(I, (572,572))
-  DATA.append (I)
+  Inew = 0.299*I[:,:,0] + 0.587*I[:,:,1] + 0.114*I[:,:,2]
+  # plt.imshow(Inew, cmap='Greys')
+  # plt.show()
+  Inew = Inew.reshape([572,572,1])
+  print (Inew.shape)
+  DATA.append (Inew)
   annIds = coco.getAnnIds(imgIds=img['id'], catIds=catIds, iscrowd=None)
   anns = coco.loadAnns(annIds)
   mimg = Image.new('L', (img['width'], img['height']), 0)
@@ -59,8 +63,8 @@ with tf.Session(config=tf.ConfigProto(log_device_placement=True)) as sess:
       for j in range(total_batch):
         batch_x = np.array(DATA[j*batch_size:(j+1)*batch_size])
         batch_y = np.array(ANNOT[j*batch_size:(j+1)*batch_size])
-        feed_dic= {net.x:batch_x,net.y:batch_y,net.tf_drop:drop_rate}
-        c,_ = sess.run([net.loss, net.train],feed_dict=feed_dic)
+        feed_dic= {'x':batch_x, 'y':batch_y, 'drop':drop_rate}
+        c = net.train_param(sess, feed_dic)
         avg_loss += c/batch_size
       print("epoch:",str(i+1),"loss=",str(avg_loss))
   except KeyboardInterrupt:

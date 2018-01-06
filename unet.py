@@ -5,7 +5,7 @@ class Unet:
 
   def __init__ (self, batch_size):
     self.x = tf.placeholder (tf.float32, [None, 572, 572, 1])
-    self.y = tf.placeholder (tf.float32, [None, 388, 388])
+    self.y = tf.placeholder (tf.float32, [None, 388, 388, 2])
     self.tf_drop = tf.placeholder (tf.float32)
     self.W = {}
     self.b = {}
@@ -30,6 +30,12 @@ class Unet:
       nptmp = np.load ("param/W"+name+".npy")
       nptmp = nptmp.transpose([2,3,1,0])
       self.W[name] = tf.Variable (tf.convert_to_tensor(nptmp, name=name))
+
+  def save (self, sess):
+    for name in self.namelist:
+      nptmp = sess.run (self.W[name])
+      nptmp = nptmp.transpose([3,2,0,1])
+      np.save ("param/W"+name+".npy", nptmp)
 
   def build_net (self):
     image_size = [572, 284, 140, 68, 32, 56, 104, 200, 392]
@@ -75,9 +81,31 @@ class Unet:
         L = tf.nn.conv2d (L, self.W[self.namelist[i]], strides=[1,1,1,1], padding="VALID")
         L = tf.nn.relu (L)
 
-    L = tf.nn.conv2d (L, self.W["10"], strides=[1,1,1,1], padding="SAME")
     # final layer shape : 388 x 388 x 1
+    self.output = tf.nn.conv2d (L, self.W["10"], strides=[1,1,1,1], padding="SAME")
+    self.output = tf.reshape (self.output, [-1, 388, 388, 2])
 
-    self.loss = tf.reduce_mean (tf.nn.softmax_cross_entropy_with_logits (logits=L, labels=self.y))
+    self.loss = tf.reduce_mean (tf.nn.softmax_cross_entropy_with_logits (logits=self.output, labels=self.y))
     optimizer = tf.train.AdagradOptimizer (learning_rate = self.h)
     self.train = optimizer.minimize (self.loss)
+
+  def get_output (self, sess, image):
+    """
+    get_output (sess, image):
+      apply Unet and take the output
+      sess : tensorflow session
+      image : numpy array of shape : (572, 572, 1)
+    """
+    _feed = {self.x:image, self.tf_drop:1}
+    return sess.run (self.output, feed_dict=_feed)
+
+  def train_param (self, sess, feed):
+    """
+    train_param (sess, feed):
+      train and return loss
+      sess : tensorflow session
+      feed : dict {'x', 'y', 'drop'}
+    """
+    _feed = {self.x:feed['x'], self.y:feed['y'], self.tf_drop:feed['drop']}
+    c,_ = sess.run([self.loss, self.train], feed_dict=_feed)
+    return c
