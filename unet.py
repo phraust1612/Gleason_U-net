@@ -31,6 +31,9 @@ class Unet:
       nptmp = nptmp.transpose([2,3,1,0])
       self.W[name] = tf.Variable (tf.convert_to_tensor(nptmp, name=name))
 
+      nptmp = np.load ("param/b"+name+".npy")
+      self.b[name] = tf.Variable (tf.convert_to_tensor(nptmp, name=name))
+
   def save (self, sess):
     for name in self.namelist:
       nptmp = sess.run (self.W[name])
@@ -49,6 +52,7 @@ class Unet:
 
       # 3x3 conv + ReLU
       L = tf.nn.conv2d (L, self.W[self.namelist[i]], strides=[1,1,1,1], padding="VALID")
+      L = tf.nn.bias_add (L, self.b[self.namelist[i]])
       L = tf.nn.relu (L)
 
       if i%2 == 1 and i < 8:
@@ -71,6 +75,7 @@ class Unet:
       if i%3 == 1:
         ks = image_size[idx]
         L = tf.nn.conv2d_transpose (L, self.W[self.namelist[i]], [self.batch_size, ks, ks, depth], strides=[1,2,2,1], padding="VALID")
+        L = tf.nn.bias_add (L, self.b[self.namelist[i]])
         L = tf.concat ([cropL.pop(), L], -1)
         idx += 1
         if depth > 128:
@@ -79,11 +84,13 @@ class Unet:
       # 3x3 conv + ReLU layer
       else:
         L = tf.nn.conv2d (L, self.W[self.namelist[i]], strides=[1,1,1,1], padding="VALID")
+        L = tf.nn.bias_add (L, self.b[self.namelist[i]])
         L = tf.nn.relu (L)
 
     # final layer shape : 388 x 388 x 1
-    self.output = tf.nn.conv2d (L, self.W["10"], strides=[1,1,1,1], padding="SAME")
-    self.output = tf.reshape (self.output, [-1, 388, 388, 2])
+    L = tf.nn.conv2d (L, self.W["10"], strides=[1,1,1,1], padding="SAME")
+    L = tf.nn.bias_add (L, self.b["10"])
+    self.output = tf.reshape (L, [-1, 388, 388, 2])
 
     self.loss = tf.reduce_mean (tf.nn.softmax_cross_entropy_with_logits (logits=self.output, labels=self.y))
     optimizer = tf.train.AdagradOptimizer (learning_rate = self.h)
