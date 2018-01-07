@@ -4,6 +4,11 @@ import numpy as np
 class Unet:
 
   def __init__ (self, batch_size):
+    """
+    __init__ (batch_size):
+      initializer of Unet
+      you need to decide the batch size to build the network
+    """
     self.x = tf.placeholder (tf.float32, [None, 572, 572, 1])
     self.y = tf.placeholder (tf.float32, [None, 388, 388, 2])
     self.tf_drop = tf.placeholder (tf.float32)
@@ -26,19 +31,29 @@ class Unet:
     self.build_net ()
 
   def load (self):
+    """
+    load ():
+      load weight parameters from param/
+    """
     for name in self.namelist:
       nptmp = np.load ("param/W"+name+".npy")
-      nptmp = nptmp.transpose([2,3,1,0])
       self.W[name] = tf.Variable (tf.convert_to_tensor(nptmp, name=name))
 
       nptmp = np.load ("param/b"+name+".npy")
       self.b[name] = tf.Variable (tf.convert_to_tensor(nptmp, name=name))
 
   def save (self, sess):
+    """
+    save (sess):
+      save weight parameters
+      sess : tensorflow session
+    """
     for name in self.namelist:
       nptmp = sess.run (self.W[name])
-      nptmp = nptmp.transpose([3,2,0,1])
       np.save ("param/W"+name+".npy", nptmp)
+
+      nptmp = sess.run (self.b[name])
+      np.save ("param/b"+name+".npy", nptmp)
 
   def build_net (self):
     image_size = [572, 284, 140, 68, 32, 56, 104, 200, 392]
@@ -48,7 +63,6 @@ class Unet:
     L = tf.reshape (self.x, [-1, 572, 572, 1])
     idx = len(image_size) - 1
     for i in range (10):
-      print (self.namelist[i],L)
 
       # 3x3 conv + ReLU
       L = tf.nn.conv2d (L, self.W[self.namelist[i]], strides=[1,1,1,1], padding="VALID")
@@ -69,7 +83,6 @@ class Unet:
     idx = 5
     depth = 512
     for i in range (10, 22):
-      print (self.namelist[i],L)
 
       # 2x2 up-conv + concatenation
       if i%3 == 1:

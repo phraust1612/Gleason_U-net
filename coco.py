@@ -68,4 +68,5 @@ with tf.Session(config=tf.ConfigProto(log_device_placement=True)) as sess:
         avg_loss += c/batch_size
       print("epoch:",str(i+1),"loss=",str(avg_loss))
   except KeyboardInterrupt:
+    net.save(sess)
     print("learning finished")

@@ -5,7 +5,7 @@ import sys
 import tensorflow as tf
 import scipy.misc
 
-name = "t000.tif"
+name = "testimage/t000.tif"
 if len(sys.argv) > 2:
   name = sys.argv[2]
 
