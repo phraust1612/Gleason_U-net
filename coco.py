@@ -14,7 +14,7 @@ ANNOT = []
 # learning rate decays as scheduled in hlist
 hlist=[0.0001, 0.0125]
 h=0.025
-epoch=100
+epoch=10000
 batch_size=1
 drop_rate = 0.5
 
@@ -25,31 +25,39 @@ drop_rate = 0.5
 # I : (height, width, depth)
 # anns[j] : j'th object - dict_keys(['iscrowd', 'area', 'segmentation', 'bbox', 'image_id', 'id', 'category_id'])
 coco = COCO("coco/annotations/instances_val2017.json")
-catIds = coco.getCatIds(catNms=['person','dog','skateboard'])
-imgIds = coco.getImgIds(catIds=catIds)
+#catIds = coco.getCatIds(catNms=['person','dog','skateboard'])
+#imgIds = coco.getImgIds(catIds=catIds)
+imgIds = coco.getImgIds()
 print("loading datasets...")
 for i in range (len (imgIds)):
   img = coco.loadImgs(imgIds[i])[0]
   I = io.imread(img['coco_url'])
   I = scipy.misc.imresize(I, (572,572))
-  Inew = 0.299*I[:,:,0] + 0.587*I[:,:,1] + 0.114*I[:,:,2]
+  try:
+    Inew = 0.299*I[:,:,0] + 0.587*I[:,:,1] + 0.114*I[:,:,2]
+  except:
+    continue
   # plt.imshow(Inew, cmap='Greys')
   # plt.show()
   Inew = Inew.reshape([572,572,1])
-  print (Inew.shape)
   DATA.append (Inew)
-  annIds = coco.getAnnIds(imgIds=img['id'], catIds=catIds, iscrowd=None)
+  annIds = coco.getAnnIds(imgIds=img['id'], iscrowd=None)
   anns = coco.loadAnns(annIds)
   mimg = Image.new('L', (img['width'], img['height']), 0)
-  for j in range (len (anns)):
-    ImageDraw.Draw(mimg).polygon(anns[j]['segmentation'][0], outline=anns[j]['category_id'], fill=anns[j]['category_id'])
+  try:
+    for j in range (len (anns)):
+      ImageDraw.Draw(mimg).polygon(anns[j]['segmentation'][0], outline=anns[j]['category_id'], fill=anns[j]['category_id'])
+  except:
+    DATA.pop()
+    continue
   mask = np.array(mimg)
-  mask = scipy.misc.imresize(mask, (388,388))
+  mask = scipy.misc.imresize(mask, (572,572))
+  mask = mask[92:480, 92:480]
   ANNOT.append (mask)
   ## uncommnet below to test annotation map images
   # plt.imshow(mask)
   # plt.show()
-  print ("%02.2f"% (100 * (i+1)/len(imgIds)) + "% done")
+  print ("%02.2f"% (100 * (i+1)/len(imgIds)) + "% done", end='\r')
 print("loading done...")
 
 net = Unet(batch_size)
@@ -68,5 +76,5 @@ with tf.Session(config=tf.ConfigProto(log_device_placement=True)) as sess:
         avg_loss += c/batch_size
       print("epoch:",str(i+1),"loss=",str(avg_loss))
   except KeyboardInterrupt:
-    net.save(sess)
     print("learning finished")
+  net.save(sess)
