@@ -22,5 +22,3 @@ with tf.Session() as sess:
   print (newI.shape)
   plt.imshow (newI[0,:,:,0], cmap="Greys")
   plt.show()
-  plt.imshow (newI[0,:,:,1], cmap="Greys")
-  plt.show()
