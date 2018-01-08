@@ -10,7 +10,7 @@ class Unet:
       you need to decide the batch size to build the network
     """
     self.x = tf.placeholder (tf.float32, [None, 572, 572, 1])
-    self.y = tf.placeholder (tf.float32, [None, 388, 388])
+    self.y = tf.placeholder (tf.float32, [None, 388, 388, 3])
     self.tf_drop = tf.placeholder (tf.float32)
     self.W = {}
     self.b = {}
@@ -100,10 +100,10 @@ class Unet:
         L = tf.nn.bias_add (L, self.b[self.namelist[i]])
         L = tf.nn.relu (L)
 
-    # final layer shape : 388 x 388 x 1
+    # final layer shape : 388 x 388 x 3
     L = tf.nn.conv2d (L, self.W["10"], strides=[1,1,1,1], padding="SAME")
     L = tf.nn.bias_add (L, self.b["10"])
-    self.output = tf.reshape (L, [-1, 388, 388])
+    self.output = tf.reshape (L, [-1, 388, 388, 3])
 
     self.loss = tf.reduce_mean (tf.nn.softmax_cross_entropy_with_logits (logits=self.output, labels=self.y))
     optimizer = tf.train.AdagradOptimizer (learning_rate = self.h)

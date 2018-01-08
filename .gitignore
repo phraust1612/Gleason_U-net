@@ -1,4 +1,4 @@
-coco/*
-extract_model/phseg_v5.caffemodel
+coco/
+extract_model/*.caffemodel
 *.pyc
 __pycache__/*

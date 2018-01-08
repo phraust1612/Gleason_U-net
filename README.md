@@ -11,6 +11,8 @@ Currently, we're using deep learning model - [U-net](http://lmb.informatik.uni-f
 * unet.py : Our Gleason_U-net object
 * coco.py : training code on [cocodatasets](https://github.com/cocodataset/cocoapi)
 * test.py : test out Gleason_Unet and plot
+* resnet.py : Resnet-152 classifier for gleason scoring
+* init_resnet.py : initializer of resnet weight parameters
 
 ## Pre-requisites
 

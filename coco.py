@@ -5,7 +5,7 @@ import skimage.io as io
 from pycocotools.coco import COCO
 from PIL import Image,ImageDraw
 from unet import Unet
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 
 DATA = []
 ANNOT = []
@@ -55,8 +55,8 @@ for i in range (len (imgIds)):
   mask = mask[92:480, 92:480]
   ANNOT.append (mask)
   ## uncommnet below to test annotation map images
-  # plt.imshow(mask)
-  # plt.show()
+  plt.imshow(mask)
+  plt.show()
   print ("%02.2f"% (100 * (i+1)/len(imgIds)) + "% done", end='\r')
 print("loading done...")
 
