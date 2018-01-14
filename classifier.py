@@ -9,7 +9,7 @@ stride_ = 112
 NULL_ = 81000000
 border_ = 10
 Image.MAX_IMAGE_PIXELS = None
-class_ = ["3", "4", "5", "n", "i", "d"]
+class_ = ["3", "4", "5", "n", "i", "s"]
 
 def show_image (I1:np.ndarray, im, x:int, y:int):
   fig = plt.figure ()
@@ -43,7 +43,7 @@ def _main (path):
         print (x,y, I1.sum())
         p = Process (target=show_image, args=(I1,img,x,y,))
         p.start ()
-        ann = input ("enter (3,4,5,n,i,d) : ")
+        ann = input ("enter (3,4,5,n,i,s) : ")
         while ann not in class_:
           ann = input ("try again : ")
         feed = {'x':x, 'y':y, 'annot':ann}
