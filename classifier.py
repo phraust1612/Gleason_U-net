@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import sys
 
-filter_ = 224
-stride_ = 112
+filter_ = 336
+stride_ = 56
 NULL_ = 81000000
 border_ = 10
 Image.MAX_IMAGE_PIXELS = None
@@ -41,12 +41,12 @@ def _main (path):
       print (I1.shape)
       if I1.sum() < NULL_:
         print (x,y, I1.sum())
-        p = Process (target=show_image, args=(I1,img,x,y,))
+        p = Process (target=show_image, args=(I1,img,y,x,))
         p.start ()
         ann = input ("enter (3,4,5,n,i,s) : ")
         while ann not in class_:
           ann = input ("try again : ")
-        feed = {'x':x, 'y':y, 'annot':ann}
+        feed = {'x':x, 'y':y, 'annot':ann, 'filter':filter_}
         anns.append (feed)
         p.terminate ()
       y += stride_
