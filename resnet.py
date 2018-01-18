@@ -10,10 +10,11 @@ class Resnet:
       initializer of Resnet-152
     """
     self.x = tf.placeholder (tf.float32, [None, 224, 224, 3])
-    self.y = tf.placeholder (tf.float32, [None, 3])
+    self.y = tf.placeholder (tf.float32, [None, 6])
     self.tf_drop = tf.placeholder (tf.float32)
     self.W = {}
     self.h = 0.025
+    self.classifier = "svm"
     self.param_dir = "param_resnet/"
     self.namelist = os.listdir(self.param_dir)
     self.load ()
@@ -62,7 +63,7 @@ class Resnet:
       self.W['bn'+level+"_branch"+branch+level2+'_1.npy'],
       self.W['scale'+level+"_branch"+branch+level2+'_1.npy'],
       self.W['scale'+level+"_branch"+branch+level2+'_0.npy'],
-      self.W['bn'+level+"_branch"+branch+level2+'_2.npy'])
+      0.00001)
     if relu:
       L = tf.nn.relu (L)
     return L
@@ -121,7 +122,7 @@ class Resnet:
       self.W['bn_conv1_1.npy'], 
       self.W['scale_conv1_1.npy'],
       self.W['scale_conv1_0.npy'],
-      self.W['bn_conv1_2.npy'])
+      0.00001)
     L = tf.nn.relu (L)
     L = tf.nn.max_pool (L, ksize=[1,3,3,1], strides=[1,2,2,1], padding="SAME")
 
@@ -150,8 +151,11 @@ class Resnet:
     self.output = tf.matmul (L, self.W['fc3_0.npy']) + self.W['fc3_1.npy']
 
     # you may use SVM or softmax classifier here
-    self.loss = tf.reduce_mean (tf.nn.softmax_cross_entropy_with_logits
-        (logits=self.output, labels=self.y))
+    if self.classifier == "softmax":
+        self.loss = tf.reduce_mean (tf.nn.softmax_cross_entropy_with_logits
+            (logits=self.output, labels=self.y))
+    else:
+        self.loss = tf.losses.hinge_loss (self.y, self.output)
     optimizer = tf.train.AdagradOptimizer (learning_rate = self.h)
     self.train = optimizer.minimize (self.loss)
 
