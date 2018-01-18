@@ -8,7 +8,10 @@ anns = os.listdir (train_dir)
 max_index = []
 for i in anns:
   flist = os.listdir (train_dir + i)
-  max_index.append (len (flist) + flist[-1])
+  if len(max_index) > 0:
+    max_index.append (len (flist) + max_index[-1])
+  else:
+    max_index.append (len (flist))
 
 data_len = max_index[-1]
 
@@ -51,7 +54,7 @@ def gleasonTrainBatch (i:int, j:int):
     for idx in range (start_idx, len (flist)):
       if idx == end_idx and label_idx == last_label_idx:
         break
-      tmp = io.imread (train_dir + flist[start_label_idx] + "/" + flist[fi])
+      tmp = io.imread (train_dir + anns[label_idx] + "/" + flist[idx])
       tmp = ImageProcess (tmp)
       data = np.concatenate ([data, tmp])
       tmp2 = np.eye (len (anns), dtype='int32')[label_idx]
@@ -62,9 +65,9 @@ def gleasonTrainBatch (i:int, j:int):
   del (tmp)
   return data, label
 
-def ImageProcess (I:np.ndarray):
+def ImageProcess (img:np.ndarray):
+  I = np.array (img, dtype="float32")
   I = scipy.misc.imresize (I, (224,224))
-  I.astype ("float32")
-  I -= np.mean (I)
-  I /= np.std (I)
+  I -= np.array (np.mean (I), dtype="float32")
+  I /= np.array (np.std (I), dtype="float32")
   return I

@@ -148,7 +148,7 @@ class Resnet:
 
     L = tf.nn.avg_pool (L, ksize=[1,7,7,1], strides=[1,1,1,1], padding="VALID")
     L = tf.reshape (L, [-1, 2048])
-    self.output = tf.matmul (L, self.W['fc3_0.npy']) + self.W['fc3_1.npy']
+    self.output = tf.matmul (L, self.W['fc6_0.npy']) + self.W['fc6_1.npy']
 
     # you may use SVM or softmax classifier here
     if self.classifier == "softmax":

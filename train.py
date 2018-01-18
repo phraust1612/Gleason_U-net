@@ -1,6 +1,7 @@
 import numpy as np
 import tensorflow as tf
 from gleason import *
+from resnet import Resnet
 
 # learning rate decays as scheduled in hlist
 epoch=10000 #default epochs
@@ -11,7 +12,6 @@ def main ():
   net = Resnet()
 
   total_batch = int(data_len/batch_size)
-  test_batch = int(test_len/batch_size)
   last_acc = 0
   with tf.Session () as sess:
     sess.run (tf.global_variables_initializer ())
