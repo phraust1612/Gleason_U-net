@@ -2,6 +2,7 @@ import skimage.io as io
 import scipy.misc
 import numpy as np
 import os
+import stainNorm_Reinhard as reinhard
 
 train_dir = "training_set/"
 anns = os.listdir (train_dir)
@@ -14,6 +15,7 @@ for i in anns:
     max_index.append (len (flist))
 
 data_len = max_index[-1]
+ref_img=np.array(scipy.misc.imresize(io.imread("training_set/gp3/SS17-77467;1;B2;1_Image5_0153.jpg"),(224,224)), dtype="float32")
 
 def gleasonTrainBatch (i:int, j:int):
   data = np.array ([], dtype=np.float32)
@@ -56,18 +58,23 @@ def gleasonTrainBatch (i:int, j:int):
         break
       tmp = io.imread (train_dir + anns[label_idx] + "/" + flist[idx])
       tmp = ImageProcess (tmp)
+      tmp = tmp.reshape (1,224,224,3)
       data = np.concatenate ([data, tmp])
       tmp2 = np.eye (len (anns), dtype='int32')[label_idx]
       tmp2.transpose()
+      tmp2 = tmp2.reshape (1,6)
       label = np.concatenate ([label, tmp2])
     start_idx = 0
 
   del (tmp)
+  del (tmp2)
   return data, label
 
 def ImageProcess (img:np.ndarray):
-  I = np.array (img, dtype="float32")
-  I = scipy.misc.imresize (I, (224,224))
-  I -= np.array (np.mean (I), dtype="float32")
-  I /= np.array (np.std (I), dtype="float32")
+  I = scipy.misc.imresize (img, (224,224))
+  I = np.array (I, dtype="float32")
+  n=reinhard.normalizer()
+  n.fit(ref_img)
+  I=n.transform(I)
+  
   return I

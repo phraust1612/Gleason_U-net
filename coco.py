@@ -24,7 +24,7 @@ drop_rate = 0.5
 # img : dict_keys(['height', 'coco_url', 'width', 'file_name', 'flickr_url', 'date_captured', 'license', 'id'])
 # I : (height, width, depth)
 # anns[j] : j'th object - dict_keys(['iscrowd', 'area', 'segmentation', 'bbox', 'image_id', 'id', 'category_id'])
-coco = COCO("coco/annotations/instances_val2017.json")
+coco = COCO("/sbig/coco/annotations/instances_val2017.json")
 #catIds = coco.getCatIds(catNms=['person','dog','skateboard'])
 #imgIds = coco.getImgIds(catIds=catIds)
 imgIds = coco.getImgIds()
