@@ -35,7 +35,7 @@ def main ():
           batch_x, batch_y = train_set.gleasonBatch (j*batch_size, (j+1)*batch_size)
           feed = {'x':batch_x,'y':batch_y,'drop':0.5}
           c = net.train_param(sess, feed)
-          avg_loss += c/train_batch
+          avg_loss += c/total_batch
 
         print ("epoch:",str(i+1),"loss=",str(avg_loss))
 

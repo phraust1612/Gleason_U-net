@@ -14,7 +14,7 @@ class Resnet:
     self.tf_drop = tf.placeholder (tf.float32)
     self.W = {}
     self.h = 0.00001
-    self.classifier = "softmax"
+    self.classifier = "svm"
     self.param_dir = "param_resnet/"
     self.namelist = os.listdir(self.param_dir)
     self.load ()
