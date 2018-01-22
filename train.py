@@ -28,14 +28,14 @@ def main ():
             batch_x, batch_y = test_set.gleasonBatch (j*batch_size, (j+1)*batch_size)
             feed = {'x':batch_x,'y':batch_y,'drop':1}
             c = net.get_accuracy (sess, feed)
-            avg_acc += c/batch_size
+            avg_acc += c/test_batch
           print (str (i), "'th accuracy:", str(avg_acc))
 
         for j in range(total_batch):
           batch_x, batch_y = train_set.gleasonBatch (j*batch_size, (j+1)*batch_size)
           feed = {'x':batch_x,'y':batch_y,'drop':0.5}
           c = net.train_param(sess, feed)
-          avg_loss += c/batch_size
+          avg_loss += c/train_batch
 
         print ("epoch:",str(i+1),"loss=",str(avg_loss))
 
