@@ -2,9 +2,25 @@ import skimage.io as io
 import numpy as np
 import tensorflow as tf
 import scipy.misc
+import openslide
 from resnet import Resnet
 
-def classifyWSI (I : np.ndarry, batch_size : int):
+def readTif (name : str):
+  X = openslide.OpenSlide (name)
+  X = X.read_region ((0,0),0,(X.dimensions[0],X.dimensions[1]))
+  X = np.array (X, dtype='uint8')
+  return X
+
+def ratioWSI (I : np.ndarray, batch_size : int):
+  annot = classifyWSI (I, batch_size)
+  unique, count = np.unique (annot, return_counts=True)
+  ans = dict (zip (unique, count))
+  del (annot)
+  del (unique)
+  del (count)
+  return ans
+
+def classifyWSI (I : np.ndarray, batch_size : int):
   if I.ndim != 3 or I.shape[2] != 3:
     return -1
   ysize = I.shape[0] // 336
